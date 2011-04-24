@@ -1,0 +1,22 @@
+!!! XML
+!!!
+
+%html
+  %head
+    %meta{"http-equiv"=>"content-type", :content=>"text/html; charset=utf-8"}
+    %meta{:name=>"language", :content=>"en"}
+
+    %title Project Board
+
+    %link{:rel=>"stylesheet", :type=>"text/css", :href=>"/reset.css"}
+    %link{:rel=>"stylesheet", :type=>"text/css", :href=>"/stylesheet.css"}
+
+    %script{:type => "text/javascript", :src => "http://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"}
+    %script{:type => "text/javascript", :src => "/underscore.js"}
+    %script{:type => "text/javascript", :src => "/backbone.js"}
+    %script{:type => "text/javascript", :src => "/gol.js"}
+
+  %body
+    #content
+      .container
+        = yield
