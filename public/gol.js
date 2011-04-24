@@ -1,5 +1,4 @@
-var Board = Backbone.Collection.extend({ model: Cell });
-
+var Cells = Backbone.Collection.extend({ model: Cell });
 
 var Cell = Backbone.Model.extend({
 
@@ -59,11 +58,11 @@ var CellView = Backbone.View.extend({
 });
 
 
-var Game = Backbone.Model.extend({
+var Board = Backbone.Model.extend({
 
   initialize: function(options){
-    this.size  = options.size;
-    this.board = new Board();
+    this.size = options.size;
+    this.cells = new Cells();
 
     for(var x=0; x < this.size; x++){
       for(var y=0; y < this.size; y++){
@@ -72,20 +71,15 @@ var Game = Backbone.Model.extend({
         var rand = Math.floor((Math.random() * 10));
         if(rand % 2 === 0){ alive = 1; }
 
-        this.board.add(new Cell({x: x, y: y, alive: alive}));
+        this.cells.add(new Cell({x: x, y: y, alive: alive}));
       }
-    }
-  },
-  run: function(count){
-    for(var x=0; x < count; x++){
-      this.step();
     }
   },
   step: function(){
     for(var x=0; x < this.size; x++){
       for(var y=0; y < this.size; y++){
         var id = x + "x" + y;
-        var cell = this.board.get(id);
+        var cell = this.cells.get(id);
         this.judge(cell);
       }
     }
@@ -141,7 +135,7 @@ var Game = Backbone.Model.extend({
   },
   cellValue: function(id){
     var num = 0;
-    var cell = this.board.get(id);
+    var cell = this.cells.get(id);
 
     if(cell != undefined){
       if(cell.alive === 1){
@@ -156,6 +150,20 @@ var Game = Backbone.Model.extend({
   coordinates: function(cell){
     var bits = cell.id.split('x');
     return {x: parseInt(bits[0]), y: parseInt(bits[1])};
+  }
+
+});
+
+
+var Game = Backbone.Model.extend({
+
+  initialize: function(options){
+    this.board = new Board(options);
+  },
+  run: function(count){
+    for(var x=0; x < count; x++){
+      this.board.step();
+    }
   }
 
 });
