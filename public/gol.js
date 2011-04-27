@@ -1,103 +1,165 @@
-var Cells = Backbone.Collection.extend({ model: Cell });
-
-var Cell = Backbone.Model.extend({
-
-  initialize: function(options){
-    this.set({
+var Board, BoardView, Cell, CellView, Cells, Game;
+var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+  for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
+  function ctor() { this.constructor = child; }
+  ctor.prototype = parent.prototype;
+  child.prototype = new ctor;
+  child.__super__ = parent.prototype;
+  return child;
+};
+Cells = (function() {
+  function Cells() {
+    Cells.__super__.constructor.apply(this, arguments);
+  }
+  __extends(Cells, Backbone.Collection);
+  Cells.prototype.model = Cell;
+  return Cells;
+})();
+Cell = (function() {
+  function Cell() {
+    Cell.__super__.constructor.apply(this, arguments);
+  }
+  __extends(Cell, Backbone.Model);
+  Cell.prototype.initialize = function(options) {
+    return this.set({
       x: options.x,
       y: options.y,
       id: options.x + "x" + options.y,
-      alive: options.alive
+      alive: 0
     });
-
-    this.view = new CellView({model: this});
-
-    if(options.alive == 1){ this.live(); }
-  },
-  die: function(){
-    this.alive = 0;
-    this.view.death();
-  },
-  live: function(){
-    this.alive = 1;
-    this.view.birth();
+  };
+  Cell.prototype.die = function() {
+    return this.set({
+      alive: 0
+    });
+  };
+  Cell.prototype.live = function() {
+    return this.set({
+      alive: 1
+    });
+  };
+  Cell.prototype.toggle = function() {
+    if (this.get("alive") === 0) {
+      return this.live();
+    } else {
+      return this.die();
+    }
+  };
+  return Cell;
+})();
+CellView = (function() {
+  function CellView() {
+    CellView.__super__.constructor.apply(this, arguments);
   }
-
-});
-
-
-var CellView = Backbone.View.extend({
-  className: "cell",
-
-  events: {
-    "mouseover": "toggle"
-  },
-
-  initialize: function(){
-    _.bindAll(this, "render");
-    this.render();
-  },
-  render: function(){
+  __extends(CellView, Backbone.View);
+  CellView.prototype.model = Cell;
+  CellView.prototype.className = "cell";
+  CellView.prototype.events = {
+    "click": "toggle"
+  };
+  CellView.prototype.initialize = function() {
+    var view;
+    view = this;
+    this.model.bind("change:alive", view.changeState);
+    return this.render();
+  };
+  CellView.prototype.render = function() {
     $('#board').append(this.el);
     return this;
-  },
-  birth: function(){
-    $(this.el).css('background', '#0AF');
-  },
-  death: function(){
-    $(this.el).css('background', '#DDD');
-  },
-  toggle: function(){
-    if(this.model.alive == 0){
-      this.model.live();
+  };
+  CellView.prototype.birth = function() {
+    return $(this.el).css('background', '#0AF');
+  };
+  CellView.prototype.death = function() {
+    return $(this.el).css('background', '#DDD');
+  };
+  CellView.prototype.toggle = function() {
+    return this.model.toggle();
+  };
+  CellView.prototype.changeState = function() {
+    console.log(this);
+    if (this.model.get("alive") === 1) {
+      return this.birth();
     } else {
-      this.model.die();
+      return this.death();
     }
+  };
+  return CellView;
+})();
+Board = (function() {
+  function Board() {
+    Board.__super__.constructor.apply(this, arguments);
   }
-
-});
-
-
-var Board = Backbone.Model.extend({
-
-  initialize: function(options){
+  __extends(Board, Backbone.Model);
+  Board.prototype.initialize = function(options) {
+    var x, y, _ref, _ref2;
     this.size = options.size;
     this.cells = new Cells();
-
-    for(var x=0; x < this.size; x++){
-      for(var y=0; y < this.size; y++){
-
-        var alive = 0;
-        var rand = Math.floor((Math.random() * 10));
-        if(rand % 2 === 0){ alive = 1; }
-
-        this.cells.add(new Cell({x: x, y: y, alive: alive}));
+    for (x = 1, _ref = this.size; (1 <= _ref ? x <= _ref : x >= _ref); (1 <= _ref ? x += 1 : x -= 1)) {
+      for (y = 1, _ref2 = this.size; (1 <= _ref2 ? y <= _ref2 : y >= _ref2); (1 <= _ref2 ? y += 1 : y -= 1)) {
+        this.cells.add(new Cell({
+          x: x,
+          y: y,
+          alive: 0
+        }));
       }
     }
-  },
-  step: function(){
-    for(var x=0; x < this.size; x++){
-      for(var y=0; y < this.size; y++){
-        var id = x + "x" + y;
-        var cell = this.cells.get(id);
-        this.judge(cell);
+    return this.view = new BoardView({
+      collection: this.cells
+    });
+  };
+  Board.prototype.step = function() {
+    var alive, cell, id, nextState, x, y, _ref, _ref2, _ref3, _results;
+    this.nextGen = new Cells();
+    for (x = 1, _ref = this.size; (1 <= _ref ? x <= _ref : x >= _ref); (1 <= _ref ? x += 1 : x -= 1)) {
+      for (y = 1, _ref2 = this.size; (1 <= _ref2 ? y <= _ref2 : y >= _ref2); (1 <= _ref2 ? y += 1 : y -= 1)) {
+        id = x + "x" + y;
+        cell = this.cells.get(id);
+        alive = this.check(cell);
+        this.nextGen.add(new Cell({
+          x: x,
+          y: y,
+          alive: alive
+        }));
       }
     }
-  },
-  judge: function(cell){
-    var crowd = this.neighborhood(cell);
-
-    if(cell.alive === 1){
-      if(crowd <= 1){ cell.die(); }
-      if(crowd >= 4){ cell.die(); }
+    _results = [];
+    for (x = 1, _ref3 = this.size; (1 <= _ref3 ? x <= _ref3 : x >= _ref3); (1 <= _ref3 ? x += 1 : x -= 1)) {
+      _results.push((function() {
+        var _ref, _results;
+        _results = [];
+        for (y = 1, _ref = this.size; (1 <= _ref ? y <= _ref : y >= _ref); (1 <= _ref ? y += 1 : y -= 1)) {
+          id = x + "x" + y;
+          cell = this.cells.get(id);
+          nextState = this.nextGen.get(id);
+          _results.push(nextState === 1 ? cell.live() : cell.die());
+        }
+        return _results;
+      }).call(this));
+    }
+    return _results;
+  };
+  Board.prototype.check = function(cell) {
+    var crowd;
+    crowd = this.neighborhood(cell);
+    if (cell.get("alive") === 1) {
+      if (crowd <= 1) {
+        return 0;
+      }
+      if (crowd >= 4) {
+        return 0;
+      }
     } else {
-      if(crowd === 3){ cell.live(); }
+      if (crowd === 3) {
+        return 1;
+      }
     }
-  },
-  neighborhood: function(cell){
-    var c = this.coordinates(cell);
-    var count = 0;
-
+    return cell.alive;
+  };
+  Board.prototype.neighborhood = function(cell) {
+    var c, count;
+    c = this.coordinates(cell);
+    count = 0;
     count += this.topLeft(c);
     count += this.top(c);
     count += this.topRight(c);
@@ -106,64 +168,94 @@ var Board = Backbone.Model.extend({
     count += this.bottomLeft(c);
     count += this.bottom(c);
     count += this.bottomRight(c);
-
     return count;
-  },
-  topLeft: function(c){
+  };
+  Board.prototype.topLeft = function(c) {
     return this.cellValue((c.x - 1) + "x" + (c.y - 1));
-  },
-  top: function(c){
+  };
+  Board.prototype.top = function(c) {
     return this.cellValue((c.x - 1) + "x" + c.y);
-  },
-  topRight: function(c){
+  };
+  Board.prototype.topRight = function(c) {
     return this.cellValue((c.x - 1) + "x" + (c.y + 1));
-  },
-  left: function(c){
+  };
+  Board.prototype.left = function(c) {
     return this.cellValue(c.x + "x" + (c.y - 1));
-  },
-  right: function(c){
+  };
+  Board.prototype.right = function(c) {
     return this.cellValue(c.x + "x" + (c.y + 1));
-  },
-  bottomLeft: function(c){
+  };
+  Board.prototype.bottomLeft = function(c) {
     return this.cellValue((c.x + 1) + "x" + (c.y - 1));
-  },
-  bottom: function(c){
+  };
+  Board.prototype.bottom = function(c) {
     return this.cellValue((c.x + 1) + "x" + c.y);
-  },
-  bottomRight: function(c){
+  };
+  Board.prototype.bottomRight = function(c) {
     return this.cellValue((c.x + 1) + "x" + (c.y + 1));
-  },
-  cellValue: function(id){
-    var num = 0;
-    var cell = this.cells.get(id);
-
-    if(cell != undefined){
-      if(cell.alive === 1){
+  };
+  Board.prototype.cellValue = function(id) {
+    var cell, num;
+    num = 0;
+    cell = this.cells.get(id);
+    if (cell !== void 0) {
+      if (cell.alive === 1) {
         num = 1;
       } else {
         num = 0;
       }
     }
-
     return num;
-  },
-  coordinates: function(cell){
-    var bits = cell.id.split('x');
-    return {x: parseInt(bits[0]), y: parseInt(bits[1])};
+  };
+  Board.prototype.coordinates = function(cell) {
+    var bits;
+    bits = cell.id.split('x');
+    return {
+      x: parseInt(bits[0]),
+      y: parseInt(bits[1])
+    };
+  };
+  return Board;
+})();
+BoardView = (function() {
+  function BoardView() {
+    BoardView.__super__.constructor.apply(this, arguments);
   }
-
-});
-
-
-var Game = Backbone.Model.extend({
-
-  initialize: function(options){
-    this.board = new Board(options);
-  },
-  run: function(count){
-    for(var x=0; x < count; x++){
-      this.board.step();
+  __extends(BoardView, Backbone.View);
+  BoardView.prototype.el = $('#board');
+  BoardView.prototype.collection = Cells;
+  BoardView.prototype.initialize = function() {
+    return this.render();
+  };
+  BoardView.prototype.render = function() {
+    this.el.html('');
+    this.collection.each(function(cell) {
+      return new CellView({
+        model: cell
+      });
+    });
+    return this;
+  };
+  return BoardView;
+})();
+Game = (function() {
+  function Game() {
+    Game.__super__.constructor.apply(this, arguments);
+  }
+  __extends(Game, Backbone.Model);
+  Game.prototype.initialize = function(options) {
+    return this.board = new Board(options);
+  };
+  Game.prototype.run = function(count) {
+    var x, _results;
+    _results = [];
+    for (x = 0; (0 <= count ? x <= count : x >= count); (0 <= count ? x += 1 : x -= 1)) {
+      _results.push(this.step());
     }
-  }
-
-});
+    return _results;
+  };
+  Game.prototype.step = function() {
+    return this.board.step();
+  };
+  return Game;
+})();
