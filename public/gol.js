@@ -55,9 +55,10 @@ CellView = (function() {
   CellView.prototype.model = Cell;
   CellView.prototype.className = "cell";
   CellView.prototype.events = {
-    "click": "toggle"
+    "mouseover": "toggle"
   };
   CellView.prototype.initialize = function() {
+    _.bindAll(this, "changeState");
     this.model.bind("change:alive", this.changeState);
     return this.render();
   };
@@ -75,7 +76,6 @@ CellView = (function() {
     return this.model.toggle();
   };
   CellView.prototype.changeState = function() {
-    console.log(this);
     if (this.model.get("alive") === 1) {
       return this.birth();
     } else {

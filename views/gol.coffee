@@ -24,11 +24,10 @@ class CellView extends Backbone.View
   className: "cell",
 
   events:
-    "click": "toggle"
+    "mouseover": "toggle"
 
   initialize: ->
-    # 'this' == Cell
-    # 'this.model' == Cell
+    _.bindAll(this, "changeState")
     this.model.bind("change:alive", this.changeState)
     this.render()
 
@@ -47,8 +46,6 @@ class CellView extends Backbone.View
     this.model.toggle()
 
   changeState: ->
-    # 'this' == Cell
-    console.log(this)
     if this.model.get("alive") is 1 then this.birth() else this.death()
 
 class Board extends Backbone.Model
