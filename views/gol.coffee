@@ -72,22 +72,22 @@ class Board extends Backbone.Model
       for y in [1..(@size)]
         id = x + "x" + y
         cell = @cells.get(id)
-        nextState = @nextGen.get(id)
+        nextGen = @nextGen.get(id)
+        state = nextGen.get("alive")
 
-        if nextState is 1 then cell.live() else cell.die()
-
-    return this
+        if state is 1 then cell.live() else cell.die()
 
   check: (cell) ->
     crowd = @neighborhood(cell)
+    alive = cell.get("alive")
 
-    if cell.get("alive") is 1
-      return 0 if crowd <= 1
-      return 0 if crowd >= 4
+    if alive is 1
+      alive = 0 if crowd <= 1
+      alive = 0 if crowd >= 4
     else
-      return 1 if crowd is 3
+      alive = 1 if crowd is 3
 
-    return cell.alive
+    return alive
 
   neighborhood: (cell) ->
     c = @coordinates(cell)
@@ -133,13 +133,12 @@ class Board extends Backbone.Model
     cell = @cells.get(id)
 
     if cell isnt undefined
-      if cell.alive is 1 then num = 1 else num = 0
+      if cell.get("alive") is 1 then num = 1 else num = 0
 
     return num
 
   coordinates: (cell) ->
-    bits = cell.id.split('x')
-    return {x: parseInt(bits[0]), y: parseInt(bits[1])}
+    return {x: cell.get("x"), y: cell.get("y")}
 
 class BoardView extends Backbone.View
   el: $('#board'),
@@ -170,3 +169,4 @@ class Game extends Backbone.Model
 
   step: ->
     @board.step()
+    return "Done"

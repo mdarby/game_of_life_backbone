@@ -3,6 +3,8 @@
 :javascript
   var game = new Game({size: 50});
 
-  $("body").click(function(){
-    // game.step();
+  $("body").bind("keyup", function(e){
+    if(e.keyCode == 32){
+      game.step();
+    }
   });

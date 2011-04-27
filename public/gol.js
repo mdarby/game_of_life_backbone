@@ -107,7 +107,7 @@ Board = (function() {
     });
   };
   Board.prototype.step = function() {
-    var alive, cell, id, nextState, x, y, _ref, _ref2, _ref3, _ref4;
+    var alive, cell, id, nextGen, state, x, y, _ref, _ref2, _ref3, _results;
     this.nextGen = new Cells();
     for (x = 1, _ref = this.size; (1 <= _ref ? x <= _ref : x >= _ref); (1 <= _ref ? x += 1 : x -= 1)) {
       for (y = 1, _ref2 = this.size; (1 <= _ref2 ? y <= _ref2 : y >= _ref2); (1 <= _ref2 ? y += 1 : y -= 1)) {
@@ -121,36 +121,40 @@ Board = (function() {
         }));
       }
     }
+    _results = [];
     for (x = 1, _ref3 = this.size; (1 <= _ref3 ? x <= _ref3 : x >= _ref3); (1 <= _ref3 ? x += 1 : x -= 1)) {
-      for (y = 1, _ref4 = this.size; (1 <= _ref4 ? y <= _ref4 : y >= _ref4); (1 <= _ref4 ? y += 1 : y -= 1)) {
-        id = x + "x" + y;
-        cell = this.cells.get(id);
-        nextState = this.nextGen.get(id);
-        if (nextState === 1) {
-          cell.live();
-        } else {
-          cell.die();
+      _results.push((function() {
+        var _ref, _results;
+        _results = [];
+        for (y = 1, _ref = this.size; (1 <= _ref ? y <= _ref : y >= _ref); (1 <= _ref ? y += 1 : y -= 1)) {
+          id = x + "x" + y;
+          cell = this.cells.get(id);
+          nextGen = this.nextGen.get(id);
+          state = nextGen.get("alive");
+          _results.push(state === 1 ? cell.live() : cell.die());
         }
-      }
+        return _results;
+      }).call(this));
     }
-    return this;
+    return _results;
   };
   Board.prototype.check = function(cell) {
-    var crowd;
+    var alive, crowd;
     crowd = this.neighborhood(cell);
-    if (cell.get("alive") === 1) {
+    alive = cell.get("alive");
+    if (alive === 1) {
       if (crowd <= 1) {
-        return 0;
+        alive = 0;
       }
       if (crowd >= 4) {
-        return 0;
+        alive = 0;
       }
     } else {
       if (crowd === 3) {
-        return 1;
+        alive = 1;
       }
     }
-    return cell.alive;
+    return alive;
   };
   Board.prototype.neighborhood = function(cell) {
     var c, count;
@@ -195,7 +199,7 @@ Board = (function() {
     num = 0;
     cell = this.cells.get(id);
     if (cell !== void 0) {
-      if (cell.alive === 1) {
+      if (cell.get("alive") === 1) {
         num = 1;
       } else {
         num = 0;
@@ -204,11 +208,9 @@ Board = (function() {
     return num;
   };
   Board.prototype.coordinates = function(cell) {
-    var bits;
-    bits = cell.id.split('x');
     return {
-      x: parseInt(bits[0]),
-      y: parseInt(bits[1])
+      x: cell.get("x"),
+      y: cell.get("y")
     };
   };
   return Board;
@@ -251,7 +253,8 @@ Game = (function() {
     return _results;
   };
   Game.prototype.step = function() {
-    return this.board.step();
+    this.board.step();
+    return "Done";
   };
   return Game;
 })();
