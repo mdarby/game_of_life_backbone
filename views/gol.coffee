@@ -7,7 +7,7 @@ class Cell extends Backbone.Model
       x: options.x,
       y: options.y,
       id: options.x + "x" + options.y,
-      alive: 0
+      alive: options.alive
     })
 
   die: ->
@@ -32,7 +32,6 @@ class CellView extends Backbone.View
     this.render()
 
   render: ->
-    # 'this' == CellView
     $('#board').append(@el)
     return this
 
@@ -76,6 +75,8 @@ class Board extends Backbone.Model
         nextState = @nextGen.get(id)
 
         if nextState is 1 then cell.live() else cell.die()
+
+    return this
 
   check: (cell) ->
     crowd = @neighborhood(cell)

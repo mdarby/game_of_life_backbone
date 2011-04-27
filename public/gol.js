@@ -25,7 +25,7 @@ Cell = (function() {
       x: options.x,
       y: options.y,
       id: options.x + "x" + options.y,
-      alive: 0
+      alive: options.alive
     });
   };
   Cell.prototype.die = function() {
@@ -107,7 +107,7 @@ Board = (function() {
     });
   };
   Board.prototype.step = function() {
-    var alive, cell, id, nextState, x, y, _ref, _ref2, _ref3, _results;
+    var alive, cell, id, nextState, x, y, _ref, _ref2, _ref3, _ref4;
     this.nextGen = new Cells();
     for (x = 1, _ref = this.size; (1 <= _ref ? x <= _ref : x >= _ref); (1 <= _ref ? x += 1 : x -= 1)) {
       for (y = 1, _ref2 = this.size; (1 <= _ref2 ? y <= _ref2 : y >= _ref2); (1 <= _ref2 ? y += 1 : y -= 1)) {
@@ -121,21 +121,19 @@ Board = (function() {
         }));
       }
     }
-    _results = [];
     for (x = 1, _ref3 = this.size; (1 <= _ref3 ? x <= _ref3 : x >= _ref3); (1 <= _ref3 ? x += 1 : x -= 1)) {
-      _results.push((function() {
-        var _ref, _results;
-        _results = [];
-        for (y = 1, _ref = this.size; (1 <= _ref ? y <= _ref : y >= _ref); (1 <= _ref ? y += 1 : y -= 1)) {
-          id = x + "x" + y;
-          cell = this.cells.get(id);
-          nextState = this.nextGen.get(id);
-          _results.push(nextState === 1 ? cell.live() : cell.die());
+      for (y = 1, _ref4 = this.size; (1 <= _ref4 ? y <= _ref4 : y >= _ref4); (1 <= _ref4 ? y += 1 : y -= 1)) {
+        id = x + "x" + y;
+        cell = this.cells.get(id);
+        nextState = this.nextGen.get(id);
+        if (nextState === 1) {
+          cell.live();
+        } else {
+          cell.die();
         }
-        return _results;
-      }).call(this));
+      }
     }
-    return _results;
+    return this;
   };
   Board.prototype.check = function(cell) {
     var crowd;
