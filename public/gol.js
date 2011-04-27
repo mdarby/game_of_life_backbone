@@ -58,9 +58,7 @@ CellView = (function() {
     "click": "toggle"
   };
   CellView.prototype.initialize = function() {
-    var view;
-    view = this;
-    this.model.bind("change:alive", view.changeState);
+    this.model.bind("change:alive", this.changeState);
     return this.render();
   };
   CellView.prototype.render = function() {

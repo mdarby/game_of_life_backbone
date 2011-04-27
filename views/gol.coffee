@@ -27,13 +27,13 @@ class CellView extends Backbone.View
     "click": "toggle"
 
   initialize: ->
-    # Since we're calling bind on this.model, it seems
-    # that "this" is being cast over to the Cell, not the CellView
-    # but capturing "this" before hand and calling 'view.changeState' still fails
+    # 'this' == Cell
+    # 'this.model' == Cell
     this.model.bind("change:alive", this.changeState)
     this.render()
 
   render: ->
+    # 'this' == CellView
     $('#board').append(@el)
     return this
 
@@ -47,9 +47,7 @@ class CellView extends Backbone.View
     this.model.toggle()
 
   changeState: ->
-    # Why is this firing twice per click?
-    # Once for birth, then for death
-    # this should be CellView, but is coming across as Cell?
+    # 'this' == Cell
     console.log(this)
     if this.model.get("alive") is 1 then this.birth() else this.death()
 
@@ -156,14 +154,10 @@ class BoardView extends Backbone.View
     @el.html('')
 
     @collection.each((cell) ->
-      # This is supposed to be a cell, but it's coming through as BoardView?
       new CellView({model: cell})
 
-      # Why would model be blank if the cell is live?
-      # The setter here is working, but when it comes to :toggle, it forgets?
       # rand = Math.floor((Math.random() * 10))
       # if(rand % 2 is 0){ cell.live() }
-
     )
 
     return this
