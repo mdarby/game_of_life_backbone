@@ -271,10 +271,14 @@ Game = (function() {
     }, 200, this);
   };
   Game.prototype.stop = function() {
+    if (!this.int) {
+      return;
+    }
     clearInterval(this.int);
     return this.int = void 0;
   };
   Game.prototype.clear = function() {
+    this.stop();
     return this.board.clear();
   };
   Game.prototype.random = function() {

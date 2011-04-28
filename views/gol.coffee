@@ -184,10 +184,12 @@ class Game extends Backbone.Model
     , 200, this)
 
   stop: ->
+    return unless @int
     clearInterval(@int)
     @int = undefined
 
   clear: ->
+    this.stop()
     @board.clear()
 
   random: ->
