@@ -1,10 +1,22 @@
 #board
 
-:javascript
-  var game = new Game({size: 50});
+#actions
+  %button#random Random
+  %button#start Start
+  %button#stop Stop
+  %button#clear Clear
 
-  $("body").bind("keyup", function(e){
-    if(e.keyCode == 32){
-      game.step();
-    }
+
+:javascript
+  $(function(){
+    var game = new Game({size: 50});
+
+    $("body").bind("keyup", function(e){
+      if(e.keyCode == 32){ game.step(); }
+    });
+
+    $("#random").click(function(){ game.random(); });
+    $("#start").click(function(){ game.start(); });
+    $("#stop").click(function(){ game.stop(); });
+    $("#clear").click(function(){ game.clear(); });
   });

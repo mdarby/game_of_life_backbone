@@ -36,10 +36,10 @@ class CellView extends Backbone.View
     return this
 
   birth: ->
-    $(@el).css('background', '#0AF')
+    $(@el).css('background', 'crimson')
 
   death: ->
-    $(@el).css('background', '#DDD')
+    $(@el).css('background', '#FFF')
 
   toggle: ->
     this.model.toggle()
@@ -57,6 +57,21 @@ class Board extends Backbone.Model
         @cells.add(new Cell({x: x, y: y, alive: 0}))
 
     @view = new BoardView({collection: this.cells})
+
+  clear: ->
+    @cells.each((cell)->
+      cell.die()
+    )
+
+  random: ->
+    this.clear()
+
+    @cells.each((cell) ->
+      rand = Math.floor((Math.random() * 10))
+
+      if rand % 3 is 0
+        cell.live()
+    )
 
   step: ->
     @nextGen = new Cells()
@@ -152,21 +167,31 @@ class BoardView extends Backbone.View
 
     @collection.each((cell) ->
       new CellView({model: cell})
-
-      # rand = Math.floor((Math.random() * 10))
-      # if(rand % 2 is 0){ cell.live() }
     )
 
     return this
 
 class Game extends Backbone.Model
   initialize: (options) ->
-    @board = new Board(options)
+    @size = options.size
+    @board = new Board({size: @size})
 
-  run: (count) ->
-    for x in [0..count]
-      @step()
+  start: ->
+    return if @int
+
+    @int = setInterval( (_this) ->
+      _this.step()
+    , 200, this)
+
+  stop: ->
+    clearInterval(@int)
+    @int = undefined
+
+  clear: ->
+    @board.clear()
+
+  random: ->
+    @board.random()
 
   step: ->
     @board.step()
-    return "Done"

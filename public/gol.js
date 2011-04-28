@@ -67,10 +67,10 @@ CellView = (function() {
     return this;
   };
   CellView.prototype.birth = function() {
-    return $(this.el).css('background', '#0AF');
+    return $(this.el).css('background', 'crimson');
   };
   CellView.prototype.death = function() {
-    return $(this.el).css('background', '#DDD');
+    return $(this.el).css('background', '#FFF');
   };
   CellView.prototype.toggle = function() {
     return this.model.toggle();
@@ -104,6 +104,21 @@ Board = (function() {
     }
     return this.view = new BoardView({
       collection: this.cells
+    });
+  };
+  Board.prototype.clear = function() {
+    return this.cells.each(function(cell) {
+      return cell.die();
+    });
+  };
+  Board.prototype.random = function() {
+    this.clear();
+    return this.cells.each(function(cell) {
+      var rand;
+      rand = Math.floor(Math.random() * 10);
+      if (rand % 3 === 0) {
+        return cell.live();
+      }
     });
   };
   Board.prototype.step = function() {
@@ -242,19 +257,31 @@ Game = (function() {
   }
   __extends(Game, Backbone.Model);
   Game.prototype.initialize = function(options) {
-    return this.board = new Board(options);
+    this.size = options.size;
+    return this.board = new Board({
+      size: this.size
+    });
   };
-  Game.prototype.run = function(count) {
-    var x, _results;
-    _results = [];
-    for (x = 0; (0 <= count ? x <= count : x >= count); (0 <= count ? x += 1 : x -= 1)) {
-      _results.push(this.step());
+  Game.prototype.start = function() {
+    if (this.int) {
+      return;
     }
-    return _results;
+    return this.int = setInterval(function(_this) {
+      return _this.step();
+    }, 200, this);
+  };
+  Game.prototype.stop = function() {
+    clearInterval(this.int);
+    return this.int = void 0;
+  };
+  Game.prototype.clear = function() {
+    return this.board.clear();
+  };
+  Game.prototype.random = function() {
+    return this.board.random();
   };
   Game.prototype.step = function() {
-    this.board.step();
-    return "Done";
+    return this.board.step();
   };
   return Game;
 })();
