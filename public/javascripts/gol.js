@@ -1,4 +1,4 @@
-var Board, BoardView, Cell, CellView, Cells, Game;
+var Board, BoardView, Cell, CellView, Cells, Controls, Game, GenerationCount;
 var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
   for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
   function ctor() { this.constructor = child; }
@@ -258,8 +258,18 @@ Game = (function() {
   __extends(Game, Backbone.Model);
   Game.prototype.initialize = function(options) {
     this.size = options.size;
-    return this.board = new Board({
+    this.board = new Board({
       size: this.size
+    });
+    this.controls = new Controls({
+      model: this,
+      el: "body"
+    });
+    this.counter = new GenerationCount({
+      model: this
+    });
+    return this.set({
+      gen: 0
     });
   };
   Game.prototype.start = function() {
@@ -279,13 +289,70 @@ Game = (function() {
   };
   Game.prototype.clear = function() {
     this.stop();
-    return this.board.clear();
+    this.board.clear();
+    return this.set({
+      gen: 0
+    });
   };
   Game.prototype.random = function() {
     return this.board.random();
   };
   Game.prototype.step = function() {
-    return this.board.step();
+    this.board.step();
+    return this.incrementGen();
+  };
+  Game.prototype.incrementGen = function() {
+    var g;
+    g = this.get("gen");
+    return this.set({
+      gen: g + 1
+    });
   };
   return Game;
+})();
+GenerationCount = (function() {
+  function GenerationCount() {
+    GenerationCount.__super__.constructor.apply(this, arguments);
+  }
+  __extends(GenerationCount, Backbone.View);
+  GenerationCount.prototype.el = "#generations";
+  GenerationCount.prototype.initialize = function() {
+    _.bindAll(this, "updateCount");
+    return this.model.bind("change:gen", this.updateCount);
+  };
+  GenerationCount.prototype.updateCount = function() {
+    return $(this.el).html("Generation: " + (this.model.get("gen")));
+  };
+  return GenerationCount;
+})();
+Controls = (function() {
+  function Controls() {
+    Controls.__super__.constructor.apply(this, arguments);
+  }
+  __extends(Controls, Backbone.View);
+  Controls.prototype.events = {
+    "click #random": "random",
+    "click #start": "start",
+    "click #stop": "stop",
+    "click #clear": "clear",
+    "keyup": "step"
+  };
+  Controls.prototype.random = function() {
+    return this.model.random();
+  };
+  Controls.prototype.start = function() {
+    return this.model.start();
+  };
+  Controls.prototype.stop = function() {
+    return this.model.stop();
+  };
+  Controls.prototype.clear = function() {
+    return this.model.clear();
+  };
+  Controls.prototype.step = function(e) {
+    if (e.keyCode === 32) {
+      return this.model.step();
+    }
+  };
+  return Controls;
 })();

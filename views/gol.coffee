@@ -173,8 +173,12 @@ class BoardView extends Backbone.View
 
 class Game extends Backbone.Model
   initialize: (options) ->
-    @size = options.size
-    @board = new Board({size: @size})
+    @size     = options.size
+    @board    = new Board({size: @size})
+    @controls = new Controls({model: this, el: "body"})
+    @counter  = new GenerationCount({model: this})
+
+    this.set({gen: 0})
 
   start: ->
     return if @int
@@ -191,9 +195,49 @@ class Game extends Backbone.Model
   clear: ->
     this.stop()
     @board.clear()
+    this.set({gen: 0})
 
   random: ->
     @board.random()
 
   step: ->
     @board.step()
+    this.incrementGen()
+
+  incrementGen: ->
+    g = this.get("gen")
+    this.set({gen: g+1})
+
+class GenerationCount extends Backbone.View
+  el: "#generations",
+
+  initialize: ->
+    _.bindAll(this, "updateCount")
+    this.model.bind("change:gen", this.updateCount)
+
+  updateCount: ->
+    $(@el).html("Generation: #{this.model.get("gen")}")
+
+class Controls extends Backbone.View
+  events:
+    "click #random" : "random",
+    "click #start"  : "start",
+    "click #stop"   : "stop",
+    "click #clear"  : "clear",
+    "keyup"         : "step"
+
+  random: ->
+    this.model.random()
+
+  start: ->
+    this.model.start()
+
+  stop: ->
+    this.model.stop()
+
+  clear: ->
+    this.model.clear()
+
+  step: (e) ->
+    this.model.step() if e.keyCode is 32
+
