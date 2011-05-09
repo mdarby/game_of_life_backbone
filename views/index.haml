@@ -6,10 +6,15 @@
   Generation: 0
 
 #actions
-  %button#random Random
-  %button#start Start
-  %button#stop Stop
-  %button#clear Clear
+  %p
+    %button#random Random
+    %button#start Start
+    %button#stop Stop
+    %button#clear Clear
+
+  %p
+    %input{:id => "speed", :type => "range", :min => 0, :max => 1000, :value => 200, :steps => 50}
+
 
 #blurb
   :markdown
@@ -21,6 +26,4 @@
 
 
 :javascript
-  $(function(){
-    var game = new Game({size: 50});
-  });
+  $(function(){ new Game({size: 50}); });

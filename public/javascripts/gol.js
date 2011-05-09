@@ -269,7 +269,8 @@ Game = (function() {
       model: this
     });
     return this.set({
-      gen: 0
+      "gen": 0,
+      "speed": 200
     });
   };
   Game.prototype.start = function() {
@@ -278,7 +279,7 @@ Game = (function() {
     }
     return this.int = setInterval(function(_this) {
       return _this.step();
-    }, 200, this);
+    }, this.get("speed"), this);
   };
   Game.prototype.stop = function() {
     if (!this.int) {
@@ -291,7 +292,7 @@ Game = (function() {
     this.stop();
     this.board.clear();
     return this.set({
-      gen: 0
+      "gen": 0
     });
   };
   Game.prototype.random = function() {
@@ -305,7 +306,7 @@ Game = (function() {
     var g;
     g = this.get("gen");
     return this.set({
-      gen: g + 1
+      "gen": g + 1
     });
   };
   return Game;
@@ -335,7 +336,8 @@ Controls = (function() {
     "click #start": "start",
     "click #stop": "stop",
     "click #clear": "clear",
-    "keyup": "step"
+    "keyup": "step",
+    "change #speed": "changeSpeed"
   };
   Controls.prototype.random = function() {
     return this.model.random();
@@ -353,6 +355,15 @@ Controls = (function() {
     if (e.keyCode === 32) {
       return this.model.step();
     }
+  };
+  Controls.prototype.changeSpeed = function() {
+    var speed;
+    speed = $("#speed").val();
+    this.model.stop();
+    return this.model.set({
+      "speed": "speed",
+      speed: speed
+    });
   };
   return Controls;
 })();

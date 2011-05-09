@@ -178,14 +178,14 @@ class Game extends Backbone.Model
     @controls = new Controls({model: this, el: "body"})
     @counter  = new GenerationCount({model: this})
 
-    this.set({gen: 0})
+    this.set({"gen": 0, "speed": 200})
 
   start: ->
     return if @int
 
     @int = setInterval( (_this) ->
       _this.step()
-    , 200, this)
+    , this.get("speed"), this)
 
   stop: ->
     return unless @int
@@ -195,7 +195,7 @@ class Game extends Backbone.Model
   clear: ->
     this.stop()
     @board.clear()
-    this.set({gen: 0})
+    this.set({"gen": 0})
 
   random: ->
     @board.random()
@@ -206,7 +206,7 @@ class Game extends Backbone.Model
 
   incrementGen: ->
     g = this.get("gen")
-    this.set({gen: g+1})
+    this.set({"gen": g+1})
 
 class GenerationCount extends Backbone.View
   el: "#generations",
@@ -224,7 +224,8 @@ class Controls extends Backbone.View
     "click #start"  : "start",
     "click #stop"   : "stop",
     "click #clear"  : "clear",
-    "keyup"         : "step"
+    "keyup"         : "step",
+    "change #speed" : "changeSpeed"
 
   random: ->
     this.model.random()
@@ -240,4 +241,9 @@ class Controls extends Backbone.View
 
   step: (e) ->
     this.model.step() if e.keyCode is 32
+
+  changeSpeed: ->
+    speed = $("#speed").val()
+    this.model.stop()
+    this.model.set({"speed", speed})
 
