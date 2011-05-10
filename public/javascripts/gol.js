@@ -59,10 +59,10 @@ CellView = (function() {
     return this;
   };
   CellView.prototype.birth = function() {
-    return $(this.el).css('background', 'crimson');
+    return $(this.el).addClass('alive');
   };
   CellView.prototype.death = function() {
-    return $(this.el).css('background', '#FFF');
+    return $(this.el).removeClass('alive');
   };
   CellView.prototype.toggle = function() {
     return this.model.toggle();

@@ -28,10 +28,10 @@ class CellView extends Backbone.View
     return this
 
   birth: ->
-    $(@el).css('background', 'crimson')
+    $(@el).addClass('alive')
 
   death: ->
-    $(@el).css('background', '#FFF')
+    $(@el).removeClass('alive')
 
   toggle: ->
     this.model.toggle()
