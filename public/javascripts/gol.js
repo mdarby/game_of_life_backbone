@@ -20,14 +20,6 @@ Cell = (function() {
     Cell.__super__.constructor.apply(this, arguments);
   }
   __extends(Cell, Backbone.Model);
-  Cell.prototype.initialize = function(options) {
-    return this.set({
-      x: options.x,
-      y: options.y,
-      id: options.x + "x" + options.y,
-      alive: options.alive
-    });
-  };
   Cell.prototype.die = function() {
     return this.set({
       alive: 0
@@ -89,13 +81,14 @@ Board = (function() {
     Board.__super__.constructor.apply(this, arguments);
   }
   __extends(Board, Backbone.Model);
-  Board.prototype.initialize = function(options) {
+  Board.prototype.initialize = function() {
     var x, y, _ref, _ref2;
-    this.size = options.size;
+    this.size = this.get("size");
     this.cells = new Cells();
     for (x = 1, _ref = this.size; (1 <= _ref ? x <= _ref : x >= _ref); (1 <= _ref ? x += 1 : x -= 1)) {
       for (y = 1, _ref2 = this.size; (1 <= _ref2 ? y <= _ref2 : y >= _ref2); (1 <= _ref2 ? y += 1 : y -= 1)) {
         this.cells.add(new Cell({
+          id: "" + x + "x" + y,
           x: x,
           y: y,
           alive: 0
@@ -126,10 +119,11 @@ Board = (function() {
     this.nextGen = new Cells();
     for (x = 1, _ref = this.size; (1 <= _ref ? x <= _ref : x >= _ref); (1 <= _ref ? x += 1 : x -= 1)) {
       for (y = 1, _ref2 = this.size; (1 <= _ref2 ? y <= _ref2 : y >= _ref2); (1 <= _ref2 ? y += 1 : y -= 1)) {
-        id = x + "x" + y;
+        id = "" + x + "x" + y;
         cell = this.cells.get(id);
         alive = this.check(cell);
         this.nextGen.add(new Cell({
+          id: "" + x + "x" + y,
           x: x,
           y: y,
           alive: alive
@@ -142,7 +136,7 @@ Board = (function() {
         var _ref, _results;
         _results = [];
         for (y = 1, _ref = this.size; (1 <= _ref ? y <= _ref : y >= _ref); (1 <= _ref ? y += 1 : y -= 1)) {
-          id = x + "x" + y;
+          id = "" + x + "x" + y;
           cell = this.cells.get(id);
           nextGen = this.nextGen.get(id);
           state = nextGen.get("alive");
@@ -256,21 +250,20 @@ Game = (function() {
     Game.__super__.constructor.apply(this, arguments);
   }
   __extends(Game, Backbone.Model);
-  Game.prototype.initialize = function(options) {
-    this.size = options.size;
+  Game.prototype.initialize = function() {
+    this.size = 50;
     this.board = new Board({
       size: this.size
     });
     this.controls = new Controls({
-      model: this,
-      el: "body"
+      model: this
     });
     this.counter = new GenerationCount({
       model: this
     });
     return this.set({
-      "gen": 0,
-      "speed": 200
+      gen: 0,
+      speed: 200
     });
   };
   Game.prototype.start = function() {
@@ -292,7 +285,7 @@ Game = (function() {
     this.stop();
     this.board.clear();
     return this.set({
-      "gen": 0
+      gen: 0
     });
   };
   Game.prototype.random = function() {
@@ -306,7 +299,7 @@ Game = (function() {
     var g;
     g = this.get("gen");
     return this.set({
-      "gen": g + 1
+      gen: g + 1
     });
   };
   return Game;
@@ -331,6 +324,7 @@ Controls = (function() {
     Controls.__super__.constructor.apply(this, arguments);
   }
   __extends(Controls, Backbone.View);
+  Controls.prototype.el = "body";
   Controls.prototype.events = {
     "click #random": "random",
     "click #start": "start",
@@ -361,7 +355,6 @@ Controls = (function() {
     speed = $("#speed").val();
     this.model.stop();
     return this.model.set({
-      "speed": "speed",
       speed: speed
     });
   };

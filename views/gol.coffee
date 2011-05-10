@@ -2,14 +2,6 @@ class Cells extends Backbone.Collection
   model: Cell
 
 class Cell extends Backbone.Model
-  initialize: (options) ->
-    this.set({
-      x: options.x,
-      y: options.y,
-      id: options.x + "x" + options.y,
-      alive: options.alive
-    })
-
   die: ->
     this.set({alive: 0})
 
@@ -48,15 +40,15 @@ class CellView extends Backbone.View
     if this.model.get("alive") is 1 then this.birth() else this.death()
 
 class Board extends Backbone.Model
-  initialize: (options) ->
-    @size = options.size
+  initialize: ->
+    @size = this.get("size")
     @cells = new Cells()
 
     for x in [1..(@size)]
       for y in [1..(@size)]
-        @cells.add(new Cell({x: x, y: y, alive: 0}))
+        @cells.add(new Cell({id: "#{x}x#{y}", x: x, y: y, alive: 0}))
 
-    @view = new BoardView({collection: this.cells})
+    @view = new BoardView({collection: @cells})
 
   clear: ->
     @cells.each((cell)->
@@ -68,9 +60,7 @@ class Board extends Backbone.Model
 
     @cells.each((cell) ->
       rand = Math.floor((Math.random() * 10))
-
-      if rand % 3 is 0
-        cell.live()
+      cell.live() if rand % 3 is 0
     )
 
   step: ->
@@ -78,14 +68,14 @@ class Board extends Backbone.Model
 
     for x in [1..(@size)]
       for y in [1..(@size)]
-        id = x + "x" + y
+        id = "#{x}x#{y}"
         cell = @cells.get(id)
         alive = @check(cell)
-        @nextGen.add(new Cell({x: x, y: y, alive: alive}))
+        @nextGen.add(new Cell({id: "#{x}x#{y}", x: x, y: y, alive: alive}))
 
     for x in [1..(@size)]
       for y in [1..(@size)]
-        id = x + "x" + y
+        id = "#{x}x#{y}"
         cell = @cells.get(id)
         nextGen = @nextGen.get(id)
         state = nextGen.get("alive")
@@ -172,13 +162,13 @@ class BoardView extends Backbone.View
     return this
 
 class Game extends Backbone.Model
-  initialize: (options) ->
-    @size     = options.size
+  initialize: ->
+    @size     = 50
     @board    = new Board({size: @size})
-    @controls = new Controls({model: this, el: "body"})
+    @controls = new Controls({model: this})
     @counter  = new GenerationCount({model: this})
 
-    this.set({"gen": 0, "speed": 200})
+    this.set({gen: 0, speed: 200})
 
   start: ->
     return if @int
@@ -195,7 +185,7 @@ class Game extends Backbone.Model
   clear: ->
     this.stop()
     @board.clear()
-    this.set({"gen": 0})
+    this.set({gen: 0})
 
   random: ->
     @board.random()
@@ -206,7 +196,7 @@ class Game extends Backbone.Model
 
   incrementGen: ->
     g = this.get("gen")
-    this.set({"gen": g+1})
+    this.set({gen: g+1})
 
 class GenerationCount extends Backbone.View
   el: "#generations",
@@ -219,6 +209,8 @@ class GenerationCount extends Backbone.View
     $(@el).html("Generation: #{this.model.get("gen")}")
 
 class Controls extends Backbone.View
+  el: "body",
+
   events:
     "click #random" : "random",
     "click #start"  : "start",
@@ -245,5 +237,5 @@ class Controls extends Backbone.View
   changeSpeed: ->
     speed = $("#speed").val()
     this.model.stop()
-    this.model.set({"speed", speed})
+    this.model.set({speed: speed})
 
